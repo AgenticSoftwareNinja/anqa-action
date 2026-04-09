@@ -249,6 +249,7 @@ export async function runNightly(options: NightlyOptions): Promise<NightlyPayloa
 
   // ── Phase 3: Re-crawl app → diff against stored inventory ───────────
   let newFlows: FlowInventoryItem[] = [];
+  let existingFlowCount = 0;
 
   if (remainingBudget() === 0) {
     console.log("[anqa:nightly] Overall budget exhausted. Skipping phases 3-4.");
@@ -257,6 +258,7 @@ export async function runNightly(options: NightlyOptions): Promise<NightlyPayloa
     const crawlStart = Date.now();
 
     const auditData = await fetchAuditDataExtended(apiBaseUrl, apiKey);
+    existingFlowCount = auditData?.flow_inventory?.length ?? 0;
 
     // Guard: no audit data or stale audit
     if (!auditData || auditData.last_audit_age_hours > 168) {
@@ -478,7 +480,7 @@ export async function runNightly(options: NightlyOptions): Promise<NightlyPayloa
     tests_failed: healedTests.filter((t) => t.status === "failed").length,
     tests_generated: newTests.length,
     tests_generated_passing: passingNewTests.length,
-    flows_discovered: newFlows.length + (auditData?.flow_inventory?.length ?? 0),
+    flows_discovered: newFlows.length + existingFlowCount,
     flows_new: newFlows.length,
     total_heal_attempts: healedTests.reduce((sum, t) => sum + t.attempts, 0),
     healing_time_ms: healingTimeMs,
