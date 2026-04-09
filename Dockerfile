@@ -44,4 +44,4 @@ COPY --from=builder /build/actions/anqa-action ./actions/anqa-action
 COPY --from=builder /build/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=builder /build/package.json ./package.json
 
-ENTRYPOINT ["node", "actions/anqa-action/dist/index.js"]
+ENTRYPOINT ["node", "/app/actions/anqa-action/dist/index.js"]
