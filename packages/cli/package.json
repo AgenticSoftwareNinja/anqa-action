@@ -1,0 +1,28 @@
+{
+  "name": "@agentic-nqa/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "anqa": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@agentic-nqa/browser": "workspace:*",
+    "@agentic-nqa/core": "workspace:*",
+    "@agentic-nqa/generator": "workspace:*",
+    "@agentic-nqa/healer": "workspace:*",
+    "@agentic-nqa/orchestrator": "workspace:*",
+    "@agentic-nqa/planner": "workspace:*",
+    "@agentic-nqa/rag": "workspace:*",
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "typescript": "^5.8.0"
+  }
+}

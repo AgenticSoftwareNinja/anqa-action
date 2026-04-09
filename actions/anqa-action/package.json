@@ -1,0 +1,35 @@
+{
+  "name": "@agentic-nqa/anqa-action",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@agentic-nqa/core": "workspace:*",
+    "@agentic-nqa/browser": "workspace:*",
+    "@agentic-nqa/generator": "workspace:*",
+    "@agentic-nqa/healer": "workspace:*",
+    "@agentic-nqa/planner": "workspace:*",
+    "@agentic-nqa/rag": "workspace:*",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@octokit/rest": "^22.0.1",
+    "@supabase/supabase-js": "^2.49.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}

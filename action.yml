@@ -1,0 +1,51 @@
+name: "Agentic Ninja QA"
+description: "AI-powered autonomous test generation, healing, and improvement for web apps"
+author: "AgenticSoftwareNinja"
+
+inputs:
+  api_key:
+    description: "Your ANQA project API key"
+    required: true
+  anthropic_key:
+    description: "Anthropic Claude API key"
+    required: true
+  mode:
+    description: "Action mode: audit, generate, pr-analysis, nightly"
+    required: false
+    default: "audit"
+  target_url:
+    description: "Target app URL to test"
+    required: true
+  api_base_url:
+    description: "ANQA dashboard API base URL"
+    required: false
+    default: "https://anqa.vercel.app"
+  auto_generate:
+    description: 'Chain generation after audit when gaps found'
+    required: false
+    default: 'false'
+  max_flows:
+    description: 'Maximum number of flows to generate tests for per run'
+    required: false
+    default: '10'
+  dry_run:
+    description: 'Run in dry-run mode (map flows without executing tests)'
+    required: false
+    default: 'false'
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    INPUT_API_KEY: ${{ inputs.api_key }}
+    INPUT_ANTHROPIC_KEY: ${{ inputs.anthropic_key }}
+    INPUT_MODE: ${{ inputs.mode }}
+    INPUT_TARGET_URL: ${{ inputs.target_url }}
+    INPUT_API_BASE_URL: ${{ inputs.api_base_url }}
+    INPUT_AUTO_GENERATE: ${{ inputs.auto_generate }}
+    INPUT_MAX_FLOWS: ${{ inputs.max_flows }}
+    INPUT_DRY_RUN: ${{ inputs.dry_run }}
+
+branding:
+  icon: "shield"
+  color: "gray-dark"

@@ -1,0 +1,1 @@
+{"version":3,"file":"test-scaffolding.d.ts","sourceRoot":"","sources":["../../src/skills/test-scaffolding.ts"],"names":[],"mappings":"AAAA,OAAO,EAAuC,KAAK,KAAK,EAAE,KAAK,QAAQ,EAAE,MAAM,mBAAmB,CAAC;AAEnG,MAAM,WAAW,aAAa;IAC5B,QAAQ,EAAE,MAAM,CAAC;IACjB,IAAI,EAAE,MAAM,CAAC;IACb,IAAI,EAAE,QAAQ,CAAC;CAChB;AAED,eAAO,MAAM,oBAAoB,EAAE,KAsElC,CAAC"}
