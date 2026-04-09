@@ -124,7 +124,7 @@ export async function runGenerate(options: GenerateOptions): Promise<GeneratePay
   console.log(`[anqa:generate] Selected ${selectedGaps.length} flows`);
 
   // ── Step 4: Convert to TestPlan ───────────────────────────────────────
-  const testPlan = auditToTestPlan(selectedGaps, audit.proposedTests, appName);
+  const testPlan = auditToTestPlan(selectedGaps, audit.proposedTests ?? [], appName);
 
   // ── Step 5: Initialize GeneratorAgent ─────────────────────────────────
   console.log("[anqa:generate] Initializing generator agent...");

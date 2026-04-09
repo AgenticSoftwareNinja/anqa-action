@@ -107,27 +107,39 @@ async function main(): Promise<void> {
   const workspace = process.env.GITHUB_WORKSPACE || "/github/workspace";
 
   if (config.mode === "generate") {
-    const generateResult = await runGenerate({
-      repoPath: workspace,
-      targetUrl: projectConfig.targetUrl,
-      anthropicApiKey: config.anthropicApiKey,
-      projectId: projectConfig.projectId,
-      authConfig: projectConfig.authConfig,
-      githubToken: config.githubToken,
-      githubRepository: config.githubRepository,
-      maxFlows,
-      apiBaseUrl: config.apiBaseUrl,
-      apiKey: config.anqaApiKey,
-    });
+    try {
+      const generateResult = await runGenerate({
+        repoPath: workspace,
+        targetUrl: projectConfig.targetUrl,
+        anthropicApiKey: config.anthropicApiKey,
+        projectId: projectConfig.projectId,
+        authConfig: projectConfig.authConfig,
+        githubToken: config.githubToken,
+        githubRepository: config.githubRepository,
+        maxFlows,
+        apiBaseUrl: config.apiBaseUrl,
+        apiKey: config.anqaApiKey,
+      });
 
-    generateResult.github_action_run_id = config.githubRunId;
-    generateResult.trigger = trigger as "manual" | "schedule" | "auto";
+      generateResult.github_action_run_id = config.githubRunId;
+      generateResult.trigger = trigger as "manual" | "schedule" | "auto";
 
-    await postGenerateResults(config.apiBaseUrl, config.anqaApiKey, generateResult);
+      await postGenerateResults(config.apiBaseUrl, config.anqaApiKey, generateResult);
 
-    console.log(`[anqa] Generation complete: ${generateResult.summary.tests_passing}/${generateResult.summary.flows_attempted} tests passing`);
-    if (generateResult.pr_url) {
-      console.log(`[anqa] PR created: ${generateResult.pr_url}`);
+      console.log(`[anqa] Generation complete: ${generateResult.summary.tests_passing}/${generateResult.summary.flows_attempted} tests passing`);
+      if (generateResult.pr_url) {
+        console.log(`[anqa] PR created: ${generateResult.pr_url}`);
+      }
+    } catch (error) {
+      console.error(`[anqa] Generate failed: ${error}`);
+      await postStatus(config.apiBaseUrl, config.anqaApiKey, {
+        status: "failed",
+        github_action_run_id: config.githubRunId,
+        mode: "generate",
+        trigger,
+        error: error instanceof Error ? error.message : String(error),
+      }).catch(() => {});
+      process.exit(1);
     }
     return;
   }

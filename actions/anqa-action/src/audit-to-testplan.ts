@@ -54,7 +54,7 @@ export function selectFlows(gaps: AuditGap[], maxFlows: number): AuditGap[] {
 
 export function auditToTestPlan(
   selectedGaps: AuditGap[],
-  proposedTests: ProposedTest[],
+  proposedTests: ProposedTest[] = [],
   targetApp: string
 ): TestPlan {
   const proposedMap = new Map(proposedTests.map((p) => [p.flowId, p]));
