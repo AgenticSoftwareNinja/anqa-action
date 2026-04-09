@@ -201,6 +201,18 @@ export async function runGenerate(options: GenerateOptions): Promise<GeneratePay
   const passingTests = tests.filter((t) => t.status === "passing");
   const failedTests = tests.filter((t) => t.status === "failed");
 
+  // Log per-test results for debugging
+  for (const t of tests) {
+    const icon = t.status === "passing" ? "✓" : "✗";
+    console.log(`[anqa:generate]   ${icon} ${t.flow_name} [${t.priority}]${t.error ? ` — ${t.error}` : ""}`);
+  }
+  if (result.errors?.length) {
+    console.log(`[anqa:generate] Agent errors:`);
+    for (const err of result.errors) {
+      console.log(`[anqa:generate]   ${err.message}`);
+    }
+  }
+
   // ── Step 8: Create PR for passing tests ───────────────────────────────
   let prUrl: string | null = null;
   let prNumber: number | null = null;
