@@ -19,7 +19,7 @@ inputs:
   api_base_url:
     description: "ANQA dashboard API base URL"
     required: false
-    default: "https://anqa.vercel.app"
+    default: "https://dashboard-theta-five-98.vercel.app"
   auto_generate:
     description: 'Chain generation after audit when gaps found'
     required: false

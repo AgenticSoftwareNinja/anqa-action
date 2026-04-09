@@ -43,7 +43,7 @@ function readConfig() {
         anqaApiKey: required("INPUT_API_KEY"),
         anthropicApiKey: required("INPUT_ANTHROPIC_KEY"),
         targetUrl: required("INPUT_TARGET_URL"),
-        apiBaseUrl: process.env.INPUT_API_BASE_URL || "https://anqa.vercel.app",
+        apiBaseUrl: process.env.INPUT_API_BASE_URL || "https://dashboard-theta-five-98.vercel.app",
         githubToken: required("GITHUB_TOKEN"),
         githubRepository: required("GITHUB_REPOSITORY"),
         githubRunId: required("GITHUB_RUN_ID"),
