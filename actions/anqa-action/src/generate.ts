@@ -45,8 +45,7 @@ export async function fetchAuditData(
     throw new Error(`Failed to fetch audit data: HTTP ${response.status}`);
   }
 
-  const data = (await response.json()) as { audit: AuditReport };
-  return data.audit;
+  return (await response.json()) as AuditReport;
 }
 
 /**

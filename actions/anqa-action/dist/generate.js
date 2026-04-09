@@ -20,8 +20,7 @@ export async function fetchAuditData(apiBaseUrl, apiKey, projectId) {
     if (!response.ok) {
         throw new Error(`Failed to fetch audit data: HTTP ${response.status}`);
     }
-    const data = (await response.json());
-    return data.audit;
+    return (await response.json());
 }
 /**
  * Quick auth probe — HEAD request against the target URL.
