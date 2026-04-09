@@ -101,12 +101,6 @@ async function main() {
     // Step 4: Route by mode
     const workspace = process.env.GITHUB_WORKSPACE || "/github/workspace";
     if (config.mode === "generate") {
-        await postStatus(config.apiBaseUrl, config.anqaApiKey, {
-            status: "running",
-            github_action_run_id: config.githubRunId,
-            mode: "generate",
-            trigger: trigger,
-        });
         const generateResult = await runGenerate({
             repoPath: workspace,
             targetUrl: projectConfig.targetUrl,
