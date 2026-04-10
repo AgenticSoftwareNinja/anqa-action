@@ -63,6 +63,13 @@ async function main(): Promise<void> {
   console.log(`[anqa] Starting ${config.mode} action`);
   console.log(`[anqa] Target: ${config.targetUrl}`);
 
+  // Debug: verify playwright install exists in container
+  try {
+    const { execSync } = await import("node:child_process");
+    console.log("[anqa:debug] /playwright contents:", execSync("ls -la /playwright/node_modules/.bin/playwright 2>&1 || echo 'NOT FOUND'").toString().trim());
+    console.log("[anqa:debug] @playwright/test:", execSync("ls /playwright/node_modules/@playwright/test/package.json 2>&1 || echo 'NOT FOUND'").toString().trim());
+  } catch (e) { console.log("[anqa:debug] error:", e); }
+
   // Step 1: Verify API key
   console.log("[anqa] Verifying API key...");
   let projectConfig;
