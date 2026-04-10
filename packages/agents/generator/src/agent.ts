@@ -94,6 +94,7 @@ export class GeneratorAgent implements Agent {
 
           const verification = (await selfVerifySkill.execute(this.ctx, {
             testFilePath: filePath,
+            baseUrl: (step.input as Record<string, unknown>).baseUrl as string,
           })) as VerificationResult;
 
           if (verification.passed) {

@@ -12,12 +12,16 @@ import {
 
 const exec = promisify(execFile);
 
-// Plain JS config — no imports needed
-const MINIMAL_PW_CONFIG = `module.exports = {
+// Plain JS config template — no imports needed
+function buildConfig(baseUrl?: string): string {
+  return `module.exports = {
   timeout: 30000,
-  use: { headless: true, browserName: "chromium" },
+  use: {
+    headless: true,${baseUrl ? `\n    baseURL: "${baseUrl}",` : ""}
+  },
 };
 `;
+}
 
 export interface VerificationResult {
   passed: boolean;
@@ -30,11 +34,11 @@ export const selfVerifySkill: Skill = {
   description: "Run a generated test file and parse results",
 
   async execute(ctx: AgentContext, input: unknown): Promise<VerificationResult> {
-    const { testFilePath } = input as { testFilePath: string };
+    const { testFilePath, baseUrl } = input as { testFilePath: string; baseUrl?: string };
 
     // Write a minimal JS config next to the test to avoid picking up the user's config
     const configPath = join(dirname(testFilePath), "playwright.config.js");
-    await writeFile(configPath, MINIMAL_PW_CONFIG, "utf-8");
+    await writeFile(configPath, buildConfig(baseUrl), "utf-8");
 
     // NODE_PATH lets generated tests resolve @playwright/test from /app/node_modules
     const env = { ...process.env, NODE_PATH: "/app/node_modules" };

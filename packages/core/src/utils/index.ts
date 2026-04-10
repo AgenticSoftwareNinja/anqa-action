@@ -53,35 +53,48 @@ export function parsePlaywrightReport(
     json = input;
   }
 
-  const suites = (json.suites ?? []) as Array<Record<string, unknown>>;
   const results: TestResult[] = [];
 
-  for (const suite of suites) {
-    const specs = (suite.specs ?? []) as Array<Record<string, unknown>>;
-    for (const spec of specs) {
-      const tests = (spec.tests ?? []) as Array<Record<string, unknown>>;
-      for (const test of tests) {
-        const testResults = (test.results ?? []) as Array<
-          Record<string, unknown>
-        >;
-        const lastResult = testResults[testResults.length - 1];
-        const status = (test.status as string) ?? (lastResult?.status as string) ?? "unknown";
-        const error = lastResult?.error as
-          | { message: string; stack?: string }
-          | undefined;
+  // Recursively walk suites (Playwright nests suites for test.describe blocks)
+  function walkSuites(suites: Array<Record<string, unknown>>, file?: string) {
+    for (const suite of suites) {
+      const suiteFile = (suite.file as string) || file || "";
+      // Process specs at this level
+      const specs = (suite.specs ?? []) as Array<Record<string, unknown>>;
+      for (const spec of specs) {
+        const tests = (spec.tests ?? []) as Array<Record<string, unknown>>;
+        for (const test of tests) {
+          const testResults = (test.results ?? []) as Array<
+            Record<string, unknown>
+          >;
+          const lastResult = testResults[testResults.length - 1];
+          const status = (test.status as string) ?? (lastResult?.status as string) ?? "unknown";
+          // Playwright may store errors as singular or array
+          const error = (lastResult?.error ?? (lastResult?.errors as unknown[])?.[0]) as
+            | { message: string; stack?: string }
+            | undefined;
 
-        results.push({
-          testFile: (suite.file as string) ?? "",
-          status: mapPlaywrightStatus(status),
-          duration: (lastResult?.duration as number) ?? 0,
-          error: error
-            ? { message: error.message, stack: error.stack }
-            : undefined,
-          retries: testResults.length - 1,
-        });
+          results.push({
+            testFile: suiteFile,
+            status: mapPlaywrightStatus(status),
+            duration: (lastResult?.duration as number) ?? 0,
+            error: error
+              ? { message: error.message, stack: error.stack }
+              : undefined,
+            retries: testResults.length - 1,
+          });
+        }
+      }
+      // Recurse into nested suites (test.describe blocks)
+      const nestedSuites = (suite.suites ?? []) as Array<Record<string, unknown>>;
+      if (nestedSuites.length > 0) {
+        walkSuites(nestedSuites, suiteFile);
       }
     }
   }
+
+  const topSuites = (json.suites ?? []) as Array<Record<string, unknown>>;
+  walkSuites(topSuites);
 
   return results;
 }
