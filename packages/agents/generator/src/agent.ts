@@ -85,6 +85,8 @@ export class GeneratorAgent implements Agent {
 
         let currentCode = generated.code;
         let passed = false;
+        let healAttempts = 0;
+        let lastError: string | undefined;
 
         // Self-verify loop
         for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -96,26 +98,29 @@ export class GeneratorAgent implements Agent {
 
           if (verification.passed) {
             passed = true;
+            lastError = undefined;
             break;
           }
 
-          if (attempt < MAX_RETRIES) {
-            // Self-heal: fix and retry
-            const failedResult = verification.results.find(
-              (r) => r.status === "failed",
-            );
-            if (failedResult) {
-              const healAttempt = (await selfHealSkill.execute(this.ctx, {
-                code: currentCode,
-                testResult: failedResult,
-                rawOutput: verification.rawOutput,
-              })) as { fixedCode: string };
-              currentCode = healAttempt.fixedCode;
+          // Capture last failure reason
+          const failedResult = verification.results.find(
+            (r) => r.status === "failed",
+          );
+          lastError = failedResult?.error?.message ?? verification.rawOutput?.slice(0, 500);
 
-              this.ctx.metrics.record("generator_self_heal_attempt", 1, {
-                attempt: String(attempt + 1),
-              });
-            }
+          if (attempt < MAX_RETRIES && failedResult) {
+            // Self-heal: fix and retry
+            healAttempts++;
+            const healAttempt = (await selfHealSkill.execute(this.ctx, {
+              code: currentCode,
+              testResult: failedResult,
+              rawOutput: verification.rawOutput,
+            })) as { fixedCode: string };
+            currentCode = healAttempt.fixedCode;
+
+            this.ctx.metrics.record("generator_self_heal_attempt", 1, {
+              attempt: String(attempt + 1),
+            });
           }
         }
 
@@ -140,6 +145,8 @@ export class GeneratorAgent implements Agent {
           metadata: {
             flow: generated.flow.name,
             passed,
+            healAttempts,
+            error: lastError,
           },
         });
       } catch (error) {
