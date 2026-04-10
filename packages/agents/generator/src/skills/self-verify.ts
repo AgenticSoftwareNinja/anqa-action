@@ -78,19 +78,22 @@ export const selfVerifySkill: Skill = {
 
       return { passed, results, rawOutput: output };
     } catch (error) {
-      // execFile errors include stdout/stderr — try to parse the JSON report
+      // execFile errors include stdout/stderr on the error object
       const execErr = error as { stdout?: string; stderr?: string; message?: string };
-      const rawOutput = execErr.stdout || execErr.stderr || toErrorMessage(error);
+      const stdout = execErr.stdout || "";
+      const stderr = execErr.stderr || "";
 
-      // Playwright exits non-zero on test failure but still produces valid JSON
-      const results = parsePlaywrightReport(rawOutput);
+      // Try to parse JSON report from stdout (Playwright writes JSON to stdout)
+      const results = parsePlaywrightReport(stdout);
       if (results.length > 0) {
         const passed = results.every((r) => r.status === "passed");
         ctx.metrics.record("test_run", 1, { result: passed ? "pass" : "fail", file: testFilePath });
-        return { passed, results, rawOutput };
+        return { passed, results, rawOutput: stdout };
       }
 
-      // Truly broken (config error, crash, etc.)
+      // No test results parsed — tests failed to load.
+      // The real error is in stderr (import failures, syntax errors, etc.)
+      const errorMessage = stderr || execErr.message || toErrorMessage(error);
       return {
         passed: false,
         results: [
@@ -98,11 +101,11 @@ export const selfVerifySkill: Skill = {
             testFile: testFilePath,
             status: "failed",
             duration: 0,
-            error: { message: rawOutput.slice(0, 1000) },
+            error: { message: errorMessage.slice(0, 1000) },
             retries: 0,
           },
         ],
-        rawOutput,
+        rawOutput: errorMessage,
       };
     }
   },
