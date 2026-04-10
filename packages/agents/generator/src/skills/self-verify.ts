@@ -1,4 +1,6 @@
 import { execFile } from "node:child_process";
+import { writeFile, unlink } from "node:fs/promises";
+import { join, dirname } from "node:path";
 import { promisify } from "node:util";
 import {
   parsePlaywrightReport,
@@ -9,6 +11,17 @@ import {
 } from "@agentic-nqa/core";
 
 const exec = promisify(execFile);
+
+const MINIMAL_PW_CONFIG = `
+import { defineConfig } from '@playwright/test';
+export default defineConfig({
+  timeout: 30000,
+  use: {
+    headless: true,
+    browserName: 'chromium',
+  },
+});
+`;
 
 export interface VerificationResult {
   passed: boolean;
@@ -23,6 +36,10 @@ export const selfVerifySkill: Skill = {
   async execute(ctx: AgentContext, input: unknown): Promise<VerificationResult> {
     const { testFilePath } = input as { testFilePath: string };
 
+    // Write a minimal config next to the test to avoid picking up the user's config
+    const configPath = join(dirname(testFilePath), "playwright.config.ts");
+    await writeFile(configPath, MINIMAL_PW_CONFIG, "utf-8");
+
     try {
       const { stdout, stderr } = await exec(
         "npx",
@@ -30,6 +47,8 @@ export const selfVerifySkill: Skill = {
           "playwright",
           "test",
           testFilePath,
+          "--config",
+          configPath,
           "--reporter=json",
           "--retries=0",
         ],
