@@ -25,6 +25,7 @@
     "@agentic-nqa/rag": "workspace:*",
     "@anthropic-ai/sdk": "^0.39.0",
     "@octokit/rest": "^22.0.1",
+    "@playwright/test": "^1.52.0",
     "@supabase/supabase-js": "^2.49.0"
   },
   "devDependencies": {

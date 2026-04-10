@@ -13,7 +13,7 @@ import {
 const exec = promisify(execFile);
 
 // Use the installed binary directly — npx downloads its own copy that can't resolve @playwright/test
-const PLAYWRIGHT_BIN = "/app/node_modules/.bin/playwright";
+const PLAYWRIGHT_BIN = "/app/actions/anqa-action/node_modules/.bin/playwright";
 
 // Plain JS config template — no imports needed
 function buildConfig(baseUrl?: string): string {

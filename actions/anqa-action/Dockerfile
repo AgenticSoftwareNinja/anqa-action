@@ -44,7 +44,4 @@ COPY --from=builder /build/actions/anqa-action ./actions/anqa-action
 COPY --from=builder /build/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=builder /build/package.json ./package.json
 
-# Install @playwright/test AFTER copying node_modules so it doesn't get overwritten
-RUN npm install @playwright/test
-
 ENTRYPOINT ["node", "/app/actions/anqa-action/dist/index.js"]
