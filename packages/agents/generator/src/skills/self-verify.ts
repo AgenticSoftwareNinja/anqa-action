@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { writeFile, unlink } from "node:fs/promises";
+import { writeFile, symlink, access } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { promisify } from "node:util";
 import {
@@ -36,12 +36,19 @@ export const selfVerifySkill: Skill = {
   async execute(ctx: AgentContext, input: unknown): Promise<VerificationResult> {
     const { testFilePath, baseUrl } = input as { testFilePath: string; baseUrl?: string };
 
+    const testDir = dirname(testFilePath);
+
     // Write a minimal JS config next to the test to avoid picking up the user's config
-    const configPath = join(dirname(testFilePath), "playwright.config.js");
+    const configPath = join(testDir, "playwright.config.js");
     await writeFile(configPath, buildConfig(baseUrl), "utf-8");
 
-    // NODE_PATH lets generated tests resolve @playwright/test from /app/node_modules
-    const env = { ...process.env, NODE_PATH: "/app/node_modules" };
+    // Symlink node_modules so tests can resolve @playwright/test
+    const nodeModulesLink = join(testDir, "node_modules");
+    try {
+      await access(nodeModulesLink);
+    } catch {
+      await symlink("/app/node_modules", nodeModulesLink, "dir").catch(() => {});
+    }
 
     try {
       const { stdout, stderr } = await exec(
@@ -55,7 +62,7 @@ export const selfVerifySkill: Skill = {
           "--reporter=json",
           "--retries=0",
         ],
-        { timeout: 60_000, env },
+        { timeout: 60_000 },
       );
 
       const output = stdout || stderr;
