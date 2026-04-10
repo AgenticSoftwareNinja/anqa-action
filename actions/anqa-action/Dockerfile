@@ -32,8 +32,10 @@ FROM node:22-slim
 
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-# Install Playwright browsers
-RUN npx playwright install --with-deps chromium
+# Flat npm install of @playwright/test — outside pnpm's strict isolation
+RUN mkdir /playwright && cd /playwright && npm init -y && npm install @playwright/test
+# Install browsers using the flat install's binary
+RUN /playwright/node_modules/.bin/playwright install --with-deps chromium
 
 WORKDIR /app
 

@@ -12,8 +12,8 @@ import {
 
 const exec = promisify(execFile);
 
-// Use the installed binary directly — npx downloads its own copy that can't resolve @playwright/test
-const PLAYWRIGHT_BIN = "/app/actions/anqa-action/node_modules/.bin/playwright";
+// Flat npm install at /playwright — bypasses pnpm's strict module isolation
+const PLAYWRIGHT_BIN = "/playwright/node_modules/.bin/playwright";
 
 // Plain JS config template — no imports needed
 function buildConfig(baseUrl?: string): string {
@@ -48,7 +48,7 @@ export const selfVerifySkill: Skill = {
     // Symlink node_modules as fallback for test-file-relative resolution
     const nodeModulesLink = join(testDir, "node_modules");
     try { await access(nodeModulesLink); } catch {
-      await symlink("/app/node_modules", nodeModulesLink, "dir").catch(() => {});
+      await symlink("/playwright/node_modules", nodeModulesLink, "dir").catch(() => {});
     }
 
     try {
