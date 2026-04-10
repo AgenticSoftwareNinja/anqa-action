@@ -63,11 +63,26 @@ async function main(): Promise<void> {
   console.log(`[anqa] Starting ${config.mode} action`);
   console.log(`[anqa] Target: ${config.targetUrl}`);
 
-  // Debug: verify playwright install exists in container
+  // Debug: find playwright in all known locations
   try {
     const { execSync } = await import("node:child_process");
-    console.log("[anqa:debug] /playwright contents:", execSync("ls -la /playwright/node_modules/.bin/playwright 2>&1 || echo 'NOT FOUND'").toString().trim());
-    console.log("[anqa:debug] @playwright/test:", execSync("ls /playwright/node_modules/@playwright/test/package.json 2>&1 || echo 'NOT FOUND'").toString().trim());
+    const cmd = `
+echo "=== WORKSPACE ===" &&
+ls -la /github/workspace/node_modules/.bin/playwright 2>&1 || true &&
+ls /github/workspace/node_modules/@playwright/test/package.json 2>&1 || true &&
+echo "=== /playwright ===" &&
+ls -la /playwright/ 2>&1 || echo "/playwright NOT FOUND" &&
+ls -la /playwright/node_modules/.bin/playwright 2>&1 || true &&
+ls /playwright/node_modules/@playwright/test/package.json 2>&1 || true &&
+echo "=== /app ===" &&
+ls -la /app/node_modules/.bin/playwright 2>&1 || true &&
+echo "=== which ===" &&
+which playwright 2>&1 || echo "not in PATH" &&
+which npx 2>&1 || echo "npx not in PATH" &&
+echo "=== generated test dir ===" &&
+ls /github/workspace/generated/ 2>&1 || echo "no generated dir yet"
+`;
+    console.log("[anqa:debug]\n" + execSync(cmd).toString());
   } catch (e) { console.log("[anqa:debug] error:", e); }
 
   // Step 1: Verify API key
