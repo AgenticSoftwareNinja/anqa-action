@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { writeFile, symlink, access } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { promisify } from "node:util";
 import {
@@ -11,6 +11,9 @@ import {
 } from "@agentic-nqa/core";
 
 const exec = promisify(execFile);
+
+// Use the installed binary directly — npx downloads its own copy that can't resolve @playwright/test
+const PLAYWRIGHT_BIN = "/app/node_modules/.bin/playwright";
 
 // Plain JS config template — no imports needed
 function buildConfig(baseUrl?: string): string {
@@ -42,19 +45,10 @@ export const selfVerifySkill: Skill = {
     const configPath = join(testDir, "playwright.config.js");
     await writeFile(configPath, buildConfig(baseUrl), "utf-8");
 
-    // Symlink node_modules so tests can resolve @playwright/test
-    const nodeModulesLink = join(testDir, "node_modules");
-    try {
-      await access(nodeModulesLink);
-    } catch {
-      await symlink("/app/node_modules", nodeModulesLink, "dir").catch(() => {});
-    }
-
     try {
       const { stdout, stderr } = await exec(
-        "npx",
+        PLAYWRIGHT_BIN,
         [
-          "playwright",
           "test",
           testFilePath,
           "--config",
