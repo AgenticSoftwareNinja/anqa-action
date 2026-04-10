@@ -96,6 +96,20 @@ export function parsePlaywrightReport(
   const topSuites = (json.suites ?? []) as Array<Record<string, unknown>>;
   walkSuites(topSuites);
 
+  // Playwright puts file-load errors (import failures, syntax errors) in top-level "errors"
+  if (results.length === 0) {
+    const topErrors = (json.errors ?? []) as Array<{ message?: string; location?: unknown }>;
+    for (const err of topErrors) {
+      results.push({
+        testFile: "",
+        status: "failed",
+        duration: 0,
+        error: { message: err.message ?? "Unknown load error" },
+        retries: 0,
+      });
+    }
+  }
+
   return results;
 }
 

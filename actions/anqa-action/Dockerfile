@@ -37,14 +37,14 @@ RUN npx playwright install --with-deps chromium
 
 WORKDIR /app
 
-# Install @playwright/test locally so generated tests can import it
-RUN npm init -y && npm install @playwright/test
-
 # Copy built artifacts
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/packages ./packages
 COPY --from=builder /build/actions/anqa-action ./actions/anqa-action
 COPY --from=builder /build/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=builder /build/package.json ./package.json
+
+# Install @playwright/test AFTER copying node_modules so it doesn't get overwritten
+RUN npm install @playwright/test
 
 ENTRYPOINT ["node", "/app/actions/anqa-action/dist/index.js"]
