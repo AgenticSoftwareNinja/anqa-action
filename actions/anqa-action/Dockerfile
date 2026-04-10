@@ -32,10 +32,13 @@ FROM node:22-slim
 
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-# Install Playwright test framework + browsers
-RUN npm install -g @playwright/test && npx playwright install --with-deps chromium
+# Install Playwright browsers
+RUN npx playwright install --with-deps chromium
 
 WORKDIR /app
+
+# Install @playwright/test locally so generated tests can import it
+RUN npm init -y && npm install @playwright/test
 
 # Copy built artifacts
 COPY --from=builder /build/node_modules ./node_modules

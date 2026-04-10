@@ -12,15 +12,11 @@ import {
 
 const exec = promisify(execFile);
 
-const MINIMAL_PW_CONFIG = `
-import { defineConfig } from '@playwright/test';
-export default defineConfig({
+// Plain JS config — no imports needed
+const MINIMAL_PW_CONFIG = `module.exports = {
   timeout: 30000,
-  use: {
-    headless: true,
-    browserName: 'chromium',
-  },
-});
+  use: { headless: true, browserName: "chromium" },
+};
 `;
 
 export interface VerificationResult {
@@ -36,9 +32,12 @@ export const selfVerifySkill: Skill = {
   async execute(ctx: AgentContext, input: unknown): Promise<VerificationResult> {
     const { testFilePath } = input as { testFilePath: string };
 
-    // Write a minimal config next to the test to avoid picking up the user's config
-    const configPath = join(dirname(testFilePath), "playwright.config.ts");
+    // Write a minimal JS config next to the test to avoid picking up the user's config
+    const configPath = join(dirname(testFilePath), "playwright.config.js");
     await writeFile(configPath, MINIMAL_PW_CONFIG, "utf-8");
+
+    // NODE_PATH lets generated tests resolve @playwright/test from /app/node_modules
+    const env = { ...process.env, NODE_PATH: "/app/node_modules" };
 
     try {
       const { stdout, stderr } = await exec(
@@ -52,7 +51,7 @@ export const selfVerifySkill: Skill = {
           "--reporter=json",
           "--retries=0",
         ],
-        { timeout: 60_000 },
+        { timeout: 60_000, env },
       );
 
       const output = stdout || stderr;
