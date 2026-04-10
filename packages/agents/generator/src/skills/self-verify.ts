@@ -51,13 +51,11 @@ function findPlaywrightModules(): string | null {
   return null;
 }
 
-// Plain JS config template — no imports needed
-function buildConfig(baseUrl?: string): string {
+// Plain JS config — no baseURL since tests use full URLs for hash-routing compatibility
+function buildConfig(): string {
   return `module.exports = {
   timeout: 30000,
-  use: {
-    headless: true,${baseUrl ? `\n    baseURL: "${baseUrl}",` : ""}
-  },
+  use: { headless: true },
 };
 `;
 }
@@ -88,7 +86,7 @@ export const selfVerifySkill: Skill = {
 
     // Write a minimal JS config next to the test
     const configPath = join(testDir, "playwright.config.js");
-    await writeFile(configPath, buildConfig(baseUrl), "utf-8");
+    await writeFile(configPath, buildConfig(), "utf-8");
 
     // Symlink node_modules so test files can resolve @playwright/test
     if (_playwrightModules) {

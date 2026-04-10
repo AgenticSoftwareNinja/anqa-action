@@ -44,7 +44,7 @@ Rules:
 - Use test.describe for grouping related tests
 - Add meaningful assertion messages
 - Use page.ariaSnapshot() for accessibility checks where appropriate
-- Base URL is configured in playwright.config.ts, use relative paths in goto()`,
+- Use the FULL target URL in page.goto() calls (do NOT use relative paths — the app may use hash routing)`,
       messages: [
         {
           role: "user",

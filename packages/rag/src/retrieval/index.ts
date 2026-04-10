@@ -33,7 +33,13 @@ export function createRAGClient(options: RAGClientOptions): RAGClient {
 
       logger?.debug("RAG search", { query, limit, threshold });
 
-      const queryEmbedding = await embeddings.embed(query);
+      let queryEmbedding: number[];
+      try {
+        queryEmbedding = await embeddings.embed(query);
+      } catch (e) {
+        logger?.warn?.("RAG search skipped — embedding failed", { error: String(e) });
+        return [];
+      }
 
       const { data, error } = await supabase.rpc("match_knowledge", {
         query_embedding: queryEmbedding,
@@ -45,7 +51,7 @@ export function createRAGClient(options: RAGClientOptions): RAGClient {
 
       if (error) {
         logger?.error("RAG search failed", { error: error.message });
-        throw new Error(`RAG search failed: ${error.message}`);
+        return [];
       }
 
       return (data ?? []).map(
@@ -68,7 +74,13 @@ export function createRAGClient(options: RAGClientOptions): RAGClient {
     async ingest(entry: RAGEntry): Promise<string> {
       logger?.debug("RAG ingest", { type: entry.type });
 
-      const embedding = await embeddings.embed(entry.content);
+      let embedding: number[];
+      try {
+        embedding = await embeddings.embed(entry.content);
+      } catch (e) {
+        logger?.warn?.("RAG ingest skipped — embedding failed", { error: String(e) });
+        return "skipped";
+      }
 
       const { data, error } = await supabase
         .from(tableName)
@@ -84,7 +96,7 @@ export function createRAGClient(options: RAGClientOptions): RAGClient {
 
       if (error) {
         logger?.error("RAG ingest failed", { error: error.message });
-        throw new Error(`RAG ingest failed: ${error.message}`);
+        return "skipped";
       }
 
       return data.id;
