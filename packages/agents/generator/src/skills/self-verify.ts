@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { writeFile } from "node:fs/promises";
+import { writeFile, symlink, access } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { promisify } from "node:util";
 import {
@@ -44,6 +44,12 @@ export const selfVerifySkill: Skill = {
     // Write a minimal JS config next to the test to avoid picking up the user's config
     const configPath = join(testDir, "playwright.config.js");
     await writeFile(configPath, buildConfig(baseUrl), "utf-8");
+
+    // Symlink node_modules as fallback for test-file-relative resolution
+    const nodeModulesLink = join(testDir, "node_modules");
+    try { await access(nodeModulesLink); } catch {
+      await symlink("/app/node_modules", nodeModulesLink, "dir").catch(() => {});
+    }
 
     try {
       const { stdout, stderr } = await exec(
