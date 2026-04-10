@@ -67,6 +67,19 @@ export const selfVerifySkill: Skill = {
 
       return { passed, results, rawOutput: output };
     } catch (error) {
+      // execFile errors include stdout/stderr — try to parse the JSON report
+      const execErr = error as { stdout?: string; stderr?: string; message?: string };
+      const rawOutput = execErr.stdout || execErr.stderr || toErrorMessage(error);
+
+      // Playwright exits non-zero on test failure but still produces valid JSON
+      const results = parsePlaywrightReport(rawOutput);
+      if (results.length > 0) {
+        const passed = results.every((r) => r.status === "passed");
+        ctx.metrics.record("test_run", 1, { result: passed ? "pass" : "fail", file: testFilePath });
+        return { passed, results, rawOutput };
+      }
+
+      // Truly broken (config error, crash, etc.)
       return {
         passed: false,
         results: [
@@ -74,11 +87,11 @@ export const selfVerifySkill: Skill = {
             testFile: testFilePath,
             status: "failed",
             duration: 0,
-            error: { message: toErrorMessage(error) },
+            error: { message: rawOutput.slice(0, 1000) },
             retries: 0,
           },
         ],
-        rawOutput: toErrorMessage(error),
+        rawOutput,
       };
     }
   },
