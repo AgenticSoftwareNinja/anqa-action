@@ -35,7 +35,7 @@ inputs:
 
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "docker://ghcr.io/agenticsoftwareninja/anqa-action:latest"
   env:
     INPUT_API_KEY: ${{ inputs.api_key }}
     INPUT_ANTHROPIC_KEY: ${{ inputs.anthropic_key }}
